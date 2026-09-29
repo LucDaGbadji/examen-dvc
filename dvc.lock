@@ -1,0 +1,151 @@
+schema: '2.0'
+stages:
+  split:
+    cmd: python src/data/data_split.py
+    deps:
+    - path: data/raw_data/raw.csv
+      hash: md5
+      md5: 617b56af2992376d5c3e91ad80823898
+      size: 333757
+    - path: src/data/data_split.py
+      hash: md5
+      md5: d2f3a5e69aba333206198f7ba2cb2932
+      size: 1892
+    params:
+      params.yaml:
+        split.random_state: 42
+        split.test_size: 0.2
+    outs:
+    - path: data/processed_data/X_test.csv
+      hash: md5
+      md5: 3650992347abd32b2cd42bde8906b31f
+      size: 52989
+    - path: data/processed_data/X_train.csv
+      hash: md5
+      md5: 10b9624259cdef969e3830e4f6c0c4c3
+      size: 210922
+    - path: data/processed_data/y_test.csv
+      hash: md5
+      md5: 3738f93f228b4914c0c48ba6a9c35298
+      size: 6821
+    - path: data/processed_data/y_train.csv
+      hash: md5
+      md5: a9f6c4c8eba38f4177a8cfac86d19e97
+      size: 27405
+  normalize:
+    cmd: python src/data/normalize.py
+    deps:
+    - path: data/processed_data/X_test.csv
+      hash: md5
+      md5: 3650992347abd32b2cd42bde8906b31f
+      size: 52989
+    - path: data/processed_data/X_train.csv
+      hash: md5
+      md5: 10b9624259cdef969e3830e4f6c0c4c3
+      size: 210922
+    - path: src/data/normalize.py
+      hash: md5
+      md5: 928c118b796e2ef2696daff52801c70c
+      size: 1164
+    outs:
+    - path: data/processed_data/X_test_scaled.csv
+      hash: md5
+      md5: eb33f401380d429e1f212e5f38cdcc5f
+      size: 57391
+    - path: data/processed_data/X_train_scaled.csv
+      hash: md5
+      md5: be404ef96c19bd97f98a6889f27095d1
+      size: 228951
+  gridsearch:
+    cmd: python src/models/grid_search.py
+    deps:
+    - path: data/processed_data/X_train_scaled.csv
+      hash: md5
+      md5: be404ef96c19bd97f98a6889f27095d1
+      size: 228951
+    - path: data/processed_data/y_train.csv
+      hash: md5
+      md5: a9f6c4c8eba38f4177a8cfac86d19e97
+      size: 27405
+    - path: src/models/grid_search.py
+      hash: md5
+      md5: f3161811ff41b1d467770c96ca1b298b
+      size: 1567
+    params:
+      params.yaml:
+        grid_search:
+          cv: 5
+          scoring: neg_mean_squared_error
+          param_grid:
+            n_estimators:
+            - 100
+            - 200
+            learning_rate:
+            - 0.05
+            - 0.1
+            max_depth:
+            - 3
+            - 5
+        model:
+          random_state: 42
+    outs:
+    - path: models/best_params.pkl
+      hash: md5
+      md5: fc88df180f55033ad250f38a6d6bfbcb
+      size: 72
+  training:
+    cmd: python src/models/training.py
+    deps:
+    - path: data/processed_data/X_train_scaled.csv
+      hash: md5
+      md5: be404ef96c19bd97f98a6889f27095d1
+      size: 228951
+    - path: data/processed_data/y_train.csv
+      hash: md5
+      md5: a9f6c4c8eba38f4177a8cfac86d19e97
+      size: 27405
+    - path: models/best_params.pkl
+      hash: md5
+      md5: fc88df180f55033ad250f38a6d6bfbcb
+      size: 72
+    - path: src/models/training.py
+      hash: md5
+      md5: e4921650894276806bd4e2286bc117e2
+      size: 1271
+    params:
+      params.yaml:
+        model:
+          random_state: 42
+    outs:
+    - path: models/gbr_model.pkl
+      hash: md5
+      md5: e2bdeaa2a974ecf4ce6b0208f2854a31
+      size: 400584
+  evaluate:
+    cmd: python src/models/evaluate.py
+    deps:
+    - path: data/processed_data/X_test_scaled.csv
+      hash: md5
+      md5: eb33f401380d429e1f212e5f38cdcc5f
+      size: 57391
+    - path: data/processed_data/y_test.csv
+      hash: md5
+      md5: 3738f93f228b4914c0c48ba6a9c35298
+      size: 6821
+    - path: models/gbr_model.pkl
+      hash: md5
+      md5: e2bdeaa2a974ecf4ce6b0208f2854a31
+      size: 400584
+    - path: src/models/evaluate.py
+      hash: md5
+      md5: 1c7cc47fffebe2b9b782a065c978054e
+      size: 1439
+    outs:
+    - path: data/prediction.csv
+      hash: md5
+      md5: 23c42e4eeb996af696c995cb8bd859ad
+      size: 13597
+    - path: metrics/scores.json
+      hash: md5
+      md5: 0510eeb8208127b235385e03d2627e0a
+      size: 132

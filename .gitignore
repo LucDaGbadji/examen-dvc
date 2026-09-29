@@ -1,2 +1,24 @@
-/venv
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment
+.venv/
+venv/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Local DVC credentials - the DagsHub token must never be committed
+.dvc/config.local
+
+# Private keys
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Entry kept from the original repository
 /clean_data.csv
